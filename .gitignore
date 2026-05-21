@@ -1,0 +1,9 @@
+dataset/
+model/
+notebook/
+*.h5
+*.pkl
+*.pt
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
