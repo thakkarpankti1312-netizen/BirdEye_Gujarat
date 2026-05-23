@@ -1,27 +1,17 @@
-from flask import Flask, render_template, request
-from pymongo import MongoClient
-from datetime import datetime
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 import os
 
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
-# ==========================================
-# CREATE FLASK APP
-# ==========================================
 app = Flask(__name__)
 
-# ==========================================
-# MONGODB CONNECTION
-# ==========================================
-client = MongoClient("mongodb+srv://thakkarpankti1312_db_user:<db_password>@Test12345.1iwxlsx.mongodb.net/?appName=BIRDEYE")
-
-db = client["BirdEye"]
-
-collection = db["predictions"]
-
-print("✅ MongoDB Connected")
+CORS(app)
 
 # ==========================================
 # BASE DIRECTORY
@@ -39,16 +29,28 @@ model_path = os.path.join(
 
 model = tf.keras.models.load_model(model_path)
 
-print("✅ Model Loaded Successfully")
+print("✅ Model Loaded")
+
+# ==========================================
+# LOAD CSV
+# ==========================================
+csv_path = os.path.join(
+    BASE_DIR,
+    "dataset",
+    "birds_info.csv"
+)
+
+bird_data = pd.read_csv(csv_path, encoding='latin1')
+
+print("✅ CSV Loaded")
 
 # ==========================================
 # LABELS
 # IMPORTANT:
-# PUT ALL YOUR BIRD CLASSES HERE
 # SAME ORDER AS TRAINING
 # ==========================================
 labels = [
-    "Asian Desert Warbler",
+      "Asian Desert Warbler",
     "Baya Weaver",
     "Black-necked Stork",
     "Chestnut-bellied Sandgrouse",
@@ -77,86 +79,96 @@ labels = [
     "White-naped Tit",
     "Yellow-eyed Babbler"
 ]
-
 # ==========================================
-# HOME PAGE
+# HOME ROUTE
 # ==========================================
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    return "BirdEye Flask App Running Successfully 🚀"
 
 # ==========================================
-# PREDICTION ROUTE
+# PREDICT ROUTE
 # ==========================================
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    # Get uploaded image
-    file = request.files["image"]
+    try:
 
-    # Save upload path
-    upload_path = os.path.join(
-        BASE_DIR,
-        "app",
-        "static",
-        "uploads",
-        file.filename
-    )
+        # GET IMAGE
+        file = request.files["image"]
 
-    # Save image
-    file.save(upload_path)
+        # LOAD IMAGE
+        img = image.load_img(file, target_size=(224, 224))
 
-    # Load image
-    img = image.load_img(upload_path, target_size=(224, 224))
+        # CONVERT TO ARRAY
+        img_array = image.img_to_array(img)
 
-    # Convert image to array
-    img_array = image.img_to_array(img)
+        # ADD BATCH DIMENSION
+        img_array = np.expand_dims(img_array, axis=0)
 
-    # Normalize
-    img_array = img_array / 255.0
+        # PREPROCESS
+        img_array = preprocess_input(img_array)
 
-    # Add batch dimension
-    img_array = np.expand_dims(img_array, axis=0)
+        # PREDICT
+        prediction = model.predict(img_array)
 
-    # Predict
-    prediction = model.predict(img_array)
+        predicted_index = np.argmax(prediction)
 
-    predicted_index = np.argmax(prediction)
+        confidence = float(np.max(prediction) * 100)
 
-    predicted_label = labels[predicted_index]
+        predicted_label = labels[predicted_index]
 
-    confidence = np.max(prediction) * 100
+        # GET CSV INFO
+        bird_info = bird_data[
+            bird_data["Bird Name"] == predicted_label
+        ]
 
-    # ==========================================
-    # SAVE PREDICTION TO MONGODB
-    prediction_data = {
+        # IF FOUND
+        if not bird_info.empty:
 
-        "bird_name": predicted_label,
+            bird_info = bird_info.iloc[0]
 
-        "confidence": float(confidence),
+            return jsonify({
 
-        "image_file": file.filename,
+                "prediction": predicted_label,
 
-        "timestamp": datetime.now()
+                "confidence": round(confidence, 2),
 
-    }
+                "Scientific_Name": bird_info["Scientific_Name"],
 
-    collection.insert_one(prediction_data)
+                "Habitat": bird_info["Habitat"],
 
-    print("✅ Prediction Saved")
+                "Diet": bird_info["Diet"],
 
-    # Return result
-    return render_template(
-        "index.html",
-        result={
-            "class": predicted_label,
-            "confidence": f"{confidence:.2f}%"
-        }
-    )
-        
+                "Conservation_status":
+                bird_info["Conservation_status"],
+
+                "Category": bird_info["Category"],
+
+                "Family": bird_info["Family"]
+            })
+
+        # DEFAULT RESPONSE
+        return jsonify({
+
+            "prediction": predicted_label,
+
+            "confidence": round(confidence, 2)
+        })
+
+    except Exception as e:
+
+        print(e)
+
+        return jsonify({
+
+            "error": str(e)
+        })
 
 # ==========================================
-# RUN APP
+# RUN FLASK
 # ==========================================
 if __name__ == "__main__":
+
     app.run(debug=True)
