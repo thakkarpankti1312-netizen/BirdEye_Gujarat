@@ -17,7 +17,9 @@ CORS(app)
 # ==========================================
 # BASE DIRECTORY
 # ==========================================
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
 
 # ==========================================
 # LOAD MODEL
@@ -41,7 +43,10 @@ csv_path = os.path.join(
     "birds_info.csv"
 )
 
-bird_data = pd.read_csv(csv_path, encoding="latin1")
+bird_data = pd.read_csv(
+    csv_path,
+    encoding="latin1"
+)
 
 print("✅ CSV Loaded")
 
@@ -49,6 +54,7 @@ print("✅ CSV Loaded")
 # CLEAN FUNCTION
 # ==========================================
 def clean_text(text):
+
     return (
         str(text)
         .replace("_", " ")
@@ -111,6 +117,7 @@ labels = [
 # ==========================================
 @app.route("/")
 def home():
+
     return "BirdEye Flask App Running Successfully 🚀"
 
 # ==========================================
@@ -118,42 +125,69 @@ def home():
 # ==========================================
 @app.route("/predict", methods=["POST"])
 def predict():
+
     try:
+
         # ==========================
         # GET IMAGE
         # ==========================
         file = request.files["image"]
 
         img = Image.open(file.stream).convert("RGB")
+
         img = img.resize((224, 224))
 
         img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)
 
-        # MobileNetV2 preprocessing
-        img_array = preprocess_input(img_array)
+        img_array = np.expand_dims(
+            img_array,
+            axis=0
+        )
+
+        # ==========================
+        # PREPROCESS
+        # ==========================
+        img_array = preprocess_input(
+            img_array
+        )
 
         # ==========================
         # MODEL PREDICTION
         # ==========================
-        prediction = model.predict(img_array)
+        prediction = model.predict(
+            img_array
+        )
 
-        predicted_index = np.argmax(prediction)
+        predicted_index = np.argmax(
+            prediction
+        )
 
         confidence = float(
             np.max(prediction) * 100
         )
 
-        predicted_label = labels[predicted_index]
-         # ==========================
+        # Fix NaN issue
+        if np.isnan(confidence):
+
+            confidence = 0
+
+        predicted_label = labels[
+            predicted_index
+        ]
+
+        # ==========================
         # CLEAN NAME
         # ==========================
-        clean_name = clean_text(predicted_label)
+        clean_name = clean_text(
+            predicted_label
+        )
 
         # ==========================
         # FIND CLOSEST MATCH
         # ==========================
-        csv_names = bird_data["clean_name"].tolist()
+        csv_names = bird_data[
+            "clean_name"
+        ].tolist()
 
         closest_match = get_close_matches(
             clean_name,
@@ -173,33 +207,58 @@ def predict():
         if closest_match:
 
             matched_rows = bird_data[
-                bird_data["clean_name"] == closest_match[0]
+                bird_data["clean_name"]
+                == closest_match[0]
             ]
 
             if not matched_rows.empty:
 
-                bird_info = matched_rows.iloc[0].to_dict()
+                bird_info = (
+                    matched_rows
+                    .iloc[0]
+                    .to_dict()
+                )
 
                 # remove helper column
-                bird_info.pop("clean_name", None)
+                bird_info.pop(
+                    "clean_name",
+                    None
+                )
+
+                # convert NaN values
+                for key, value in bird_info.items():
+
+                    if pd.isna(value):
+
+                        bird_info[key] = ""
+
+                    else:
+
+                        bird_info[key] = str(value)
 
                 print("✅ Bird info found")
 
             else:
 
                 bird_info = {
-                    "message": "Bird information not found"
+                    "message":
+                    "Bird information not found"
                 }
 
-                print("❌ Match found but row empty")
+                print(
+                    "❌ Match found but row empty"
+                )
 
         else:
 
             bird_info = {
-                "message": "Bird information not found"
+                "message":
+                "Bird information not found"
             }
 
-            print("❌ No close match found")
+            print(
+                "❌ No close match found"
+            )
 
         print("===================================")
 
@@ -207,53 +266,85 @@ def predict():
         # RETURN RESPONSE
         # ==========================
         return jsonify({
-            "prediction": predicted_label,
-            "confidence": round(confidence, 2),
-            "info": bird_info
+
+            "prediction":
+            predicted_label,
+
+            "confidence":
+            round(confidence, 2),
+
+            "info":
+            bird_info
+
         })
 
     except Exception as e:
+
         print("ERROR:", str(e))
+
         return jsonify({
+
             "error": str(e)
+
         })
 
 # ==========================================
 # GET BIRD INFO ROUTE
 # ==========================================
-@app.route("/bird-info", methods=["GET"])
+@app.route(
+    "/bird-info",
+    methods=["GET"]
+)
 def bird_info():
 
     try:
 
-        name = request.args.get("name")
+        name = request.args.get(
+            "name"
+        )
 
-        clean_name = clean_text(name)
+        clean_name = clean_text(
+            name
+        )
 
         data = bird_data[
-            bird_data["clean_name"] == clean_name
+            bird_data["clean_name"]
+            == clean_name
         ]
 
         if data.empty:
 
             return jsonify({
-                "error": "Bird not found"
+
+                "error":
+                "Bird not found"
+
             })
 
-        result = data.iloc[0].to_dict()
+        result = (
+            data.iloc[0]
+            .to_dict()
+        )
 
-        result.pop("clean_name", None)
+        result.pop(
+            "clean_name",
+            None
+        )
 
         return jsonify(result)
 
     except Exception as e:
 
         return jsonify({
-            "error": str(e)
+
+            "error":
+            str(e)
+
         })
 
 # ==========================================
 # RUN APP
 # ==========================================
 if __name__ == "__main__":
+
     app.run(debug=True)

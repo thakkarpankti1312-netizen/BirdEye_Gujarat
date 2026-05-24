@@ -1,4 +1,3 @@
-import "./i18n/i18n";
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";

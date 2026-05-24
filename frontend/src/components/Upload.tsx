@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { predictBird } from "../api/birdApi";
 import {
   useState,
@@ -16,8 +15,6 @@ import {
 } from "react-icons/fi";
 
 export default function Upload() {
-
-  const { t, i18n } = useTranslation();
 
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -127,33 +124,6 @@ export default function Upload() {
     
 
       <div className="mx-auto max-w-7xl">
-
-        {/* LANGUAGE BUTTONS */}
-        <div className="flex gap-3 justify-center mb-10">
-
-          <button
-            onClick={() => i18n.changeLanguage("en")}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:scale-105 transition"
-          >
-            English
-          </button>
-
-          <button
-            onClick={() => i18n.changeLanguage("gu")}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:scale-105 transition"
-          >
-            ગુજરાતી
-          </button>
-
-          <button
-            onClick={() => i18n.changeLanguage("hi")}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:scale-105 transition"
-          >
-            हिन्दी
-          </button>
-
-        </div>
-
         {/* HEADING */}
         <div className="mx-auto max-w-3xl text-center">
 
@@ -162,7 +132,7 @@ export default function Upload() {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl font-extrabold bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 bg-clip-text text-transparent"
           >
-            {t("upload")}
+            {"Upload Bird Image"}
           </motion.h2>
 
           <p className="mt-5 text-lg text-gray-600">
@@ -248,11 +218,11 @@ export default function Upload() {
                 <div className="h-24 w-24 border-[6px] border-green-500 border-t-transparent rounded-full animate-spin" />
 
                 <h3 className="mt-8 text-3xl font-extrabold text-gray-800">
-                  {t("analyzing")}
+                 {"Analyzing Image..."}
                 </h3>
 
                 <p className="mt-4 text-gray-500 text-lg text-center">
-                  {t("identifying")}
+                  Our AI is examining the bird's features to identify its species, habitat, and more. This may take a moment.
                 </p>
 
               </motion.div>
@@ -286,7 +256,7 @@ export default function Upload() {
                       <FiCheckCircle />
 
                       <span className="uppercase text-xs tracking-widest font-bold">
-                        {t("detection")}
+                        {"Detected"}
                       </span>
 
                     </div>
@@ -312,7 +282,7 @@ export default function Upload() {
                     <div className="flex justify-between items-center">
 
                       <span className="text-gray-700 font-semibold text-lg">
-                        {t("accuracy")}
+                        {"Accuracy"}
                       </span>
 
                       <span className="text-3xl font-extrabold text-green-600">
@@ -346,11 +316,11 @@ export default function Upload() {
                     >
 
                       <h3 className="text-red-700 font-extrabold text-2xl">
-                        ⚠ {t("rareAlert")}
+                        {"⚠ Rare Bird Detected!"}
                       </h3>
 
                       <p className="mt-3 text-red-600">
-                        {t("rareMessage")}
+                        {"This species is considered rare in Gujarat. If you spot it, consider reporting to local wildlife authorities to help conservation efforts."}
                       </p>
 
                     </motion.div>
@@ -362,7 +332,7 @@ export default function Upload() {
   <div className="mt-4 rounded-2xl bg-blue-50 border border-blue-200 p-4">
 
     <h3 className="font-bold text-blue-700">
-      ⭐ Special Feature
+      {"⭐ Special Feature"}
     </h3>
 
     <p className="mt-1 text-sm text-blue-600">
@@ -374,16 +344,14 @@ export default function Upload() {
 )}
 
                   {/* BUTTON */}
-                  <button
-                    onClick={() => setShowInfo(!showInfo)}
-                    className="mt-8 w-full rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 py-4 text-white font-bold text-lg shadow-lg hover:scale-[1.02] hover:shadow-2xl transition duration-300"
-                  >
-
-                    {showInfo
-                      ? t("hideInfo")
-                      : t("showInfo")}
-
-                  </button>
+                 <button
+  onClick={() => setShowInfo(!showInfo)}
+  className="mt-6 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 py-4 text-white font-bold text-lg shadow-lg hover:scale-[1.02] transition-all duration-300"
+>
+  {showInfo
+    ? "Hide Bird Information"
+    : "Show Bird Information"}
+</button>
 
                   {/* INFO */}
                   <AnimatePresence>
@@ -447,8 +415,8 @@ export default function Upload() {
                 </h3>
 
                 <p className="mt-4 text-gray-500 text-center max-w-sm text-lg">
-                  Upload a bird image and AI will identify species,
-                  habitat, conservation status and more.
+                  "Upload a bird image and AI will identify species,
+                  habitat, conservation status and more."
                 </p>
 
               </div>
