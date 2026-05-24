@@ -22,26 +22,18 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold uppercase tracking-wider">Quick Links</h4>
+          <h4 className="text-sm font-bold uppercase tracking-wider">Project Members</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            {["Home", "Features", "Upload", "About"].map((l) => (
-              <li key={l}><a href={`#${l.toLowerCase()}`} className="hover:text-primary transition-colors">{l}</a></li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-bold uppercase tracking-wider">Contact</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>hello@gujaratbird.ai</li>
-            <li>Ahmedabad, Gujarat</li>
-            <li>+91 99999 99999</li>
+            <li>Thakkar Pankti</li>
+            <li>Parmar Laxita</li>
+            <li>Zala Vrunda</li>
+            <li>Khistariya Nirali</li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Gujarat Bird AI. Crafted with care for nature.
+        © {new Date().getFullYear()} BirdEye Gujarat. Crafted with care for nature.
       </div>
     </footer>
   );

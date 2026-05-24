@@ -23,15 +23,15 @@ export default function Hero() {
           </span>
 
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-            AI Based{" "}
-            <span className="gradient-text">Gujarat Bird</span>{" "}
-            Species Detection System
+            AI-Based{" "}
+            <span className="gradient-text">Bird Species</span>{" "}
+            Identification and Monitoring System
           </h1>
 
           <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground">
             Upload bird images and identify Gujarat bird species instantly using
             Artificial Intelligence. Explore habitat, conservation status, diet,
-            diseases, and rare species alerts.
+            and rare species alerts.
           </p>
 
           <div className="mt-8">
@@ -63,7 +63,7 @@ export default function Hero() {
             />
             {/* Floating info card */}
             <div className="absolute bottom-4 left-4 right-4 glass rounded-2xl px-4 py-3 shadow-soft">
-              <p className="text-xs uppercase tracking-wider text-primary font-semibold">State Bird</p>
+              <p className="text-xs uppercase tracking-wider text-primary font-semibold">National Bird</p>
               <p className="text-sm font-bold">Indian Peafowl • Pavo cristatus</p>
             </div>
           </div>

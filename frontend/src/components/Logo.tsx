@@ -6,7 +6,7 @@ export default function Logo({ light = false }: { light?: boolean }) {
     <div className="flex items-center gap-2">
       <img src={logo} alt="Gujarat Bird AI logo" className="h-9 w-9 object-contain" />
       <span className={`text-lg font-bold tracking-tight ${light ? "text-white" : "text-foreground"}`}>
-        Gujarat Bird <span className="gradient-text">AI</span>
+        BirdEye <span className="gradient-text">Gujarat</span>
       </span>
     </div>
   );
