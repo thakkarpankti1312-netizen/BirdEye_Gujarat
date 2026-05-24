@@ -193,6 +193,8 @@ export default function Upload() {
 
                 <button
                   onClick={reset}
+                  title="Remove Image"
+                  aria-label="Remove Image"
                   className="absolute top-5 right-5 grid h-12 w-12 place-items-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
                 >
                   <FiX className="text-xl" />

@@ -43,7 +43,10 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="hidden md:flex items-center gap-2">
-            <button className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent transition-colors">
+            <button
+              title="User Profile"
+              aria-label="User Profile"
+              className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent transition-colors">
               <FiUser className="text-foreground" />
             </button>
             <button

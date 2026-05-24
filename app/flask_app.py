@@ -10,13 +10,18 @@ import os
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
+# ==========================================
+# CREATE APP
+# ==========================================
 app = Flask(__name__)
 CORS(app)
 
 # ==========================================
 # BASE DIRECTORY
 # ==========================================
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
 
 # ==========================================
 # LOAD MODEL
@@ -29,7 +34,7 @@ model_path = os.path.join(
 
 model = tf.keras.models.load_model(model_path)
 
-print("✅ Model Loaded")
+print("✅ Model Loaded Successfully")
 
 # ==========================================
 # LOAD CSV
@@ -42,14 +47,21 @@ csv_path = os.path.join(
 
 bird_data = pd.read_csv(csv_path, encoding="latin1")
 
-# CLEAN COLUMN
-bird_data["Bird Name"] = (
+print("✅ CSV Loaded Successfully")
+
+# ==========================================
+# CLEAN CSV COLUMN
+# ==========================================
+bird_data["clean_name"] = (
     bird_data["Bird Name"]
     .astype(str)
+    .str.replace("'s", "s", regex=False)
+    .str.replace("_s", "s", regex=False)
+    .str.replace("_", " ", regex=False)
+    .str.replace("'", "", regex=False)
     .str.strip()
+    .str.lower()
 )
-
-print("✅ CSV Loaded")
 
 # ==========================================
 # LABELS
@@ -90,6 +102,7 @@ labels = [
 # ==========================================
 @app.route("/")
 def home():
+
     return "BirdEye Flask App Running Successfully 🚀"
 
 # ==========================================
@@ -99,94 +112,118 @@ def home():
 def predict():
 
     try:
-        # ==========================
+
+        # ==================================
         # GET IMAGE
-        # ==========================
+        # ==================================
         file = request.files.get("image")
 
         if file is None:
+
             return jsonify({
                 "error": "No image uploaded"
             })
 
+        # ==================================
+        # PROCESS IMAGE
+        # ==================================
         img = Image.open(file.stream).convert("RGB")
+
         img = img.resize((224, 224))
 
         img_array = image.img_to_array(img)
+
         img_array = np.expand_dims(img_array, axis=0)
+
         img_array = preprocess_input(img_array)
 
-        # ==========================
+        # ==================================
         # MODEL PREDICTION
-        # ==========================
+        # ==================================
         prediction = model.predict(img_array)
 
         predicted_index = np.argmax(prediction)
+
         confidence = float(np.max(prediction) * 100)
+
+        # FIX NaN
+        if np.isnan(confidence):
+
+            confidence = 0
 
         predicted_label = labels[predicted_index]
 
-        # ==========================
-        # CLEAN PREDICTED NAME
-        # ==========================
+        # ==================================
+        # CLEAN PREDICTED LABEL
+        # ==================================
         clean_name = (
             predicted_label
+            .replace("_s", "'s")
             .replace("_", " ")
             .replace("'", "")
             .strip()
             .lower()
         )
 
-        # ==========================
-        # FIND BIRD INFO
-        # ==========================
-        bird_data["clean_name"] = (
-            bird_data["Bird Name"]
-            .astype(str)
-            .str.replace("_", " ", regex=False)
-            .str.replace("'", "", regex=False)
-            .str.strip()
-            .str.lower()
-        )
+        print("Predicted Bird:", clean_name)
 
-        matched_rows = pd.DataFrame()
+        # ==================================
+        # FIND EXACT MATCH
+        # ==================================
+        matched_rows = bird_data[
+            bird_data["clean_name"] == clean_name
+        ]
 
-        for word in clean_name.split():
-            temp = bird_data[
-                bird_data["clean_name"]
-                .str.contains(word, na=False)
-            ]
-
-            if not temp.empty:
-                matched_rows = temp
-                break
-
-        print("Predicted:", clean_name)
-        print("CSV Names:", bird_data["clean_name"].tolist())
-
-        # ==========================
-        # GET INFO
-        # ==========================
+        # ==================================
+        # GET BIRD INFO
+        # ==================================
         if not matched_rows.empty:
+
             bird_info = matched_rows.iloc[0].to_dict()
+
+            # REMOVE NaN VALUES
+            for key, value in bird_info.items():
+
+                if pd.isna(value):
+
+                    bird_info[key] = ""
+
+                elif isinstance(
+                    value,
+                    (np.integer, np.floating)
+                ):
+
+                    bird_info[key] = value.item()
+
         else:
+
             bird_info = {
                 "message": "Bird information not found"
             }
 
         print("Prediction:", predicted_label)
-        print("Bird Info:", bird_info)
+        print("Confidence:", confidence)
 
-        # ==========================
+        # ==================================
         # RETURN RESPONSE
-        # ==========================
+        # ==================================
         return jsonify({
-            "prediction": predicted_label,
-            "confidence": round(confidence, 2),
+
+            "prediction": str(predicted_label),
+
+            "confidence": round(
+                float(confidence),
+                2
+            ),
+
             "info": bird_info
+
         })
 
     except Exception as e:
+
+        print("ERROR:", str(e))
+
         return jsonify({
             "error": str(e)
         })
@@ -198,29 +235,48 @@ def predict():
 def bird_info():
 
     try:
+
         name = request.args.get("name")
 
-        data = bird_data[
-            bird_data["Bird Name"]
-            .astype(str)
-            .str.replace("_", " ", regex=False)
-            .str.replace("'", "", regex=False)
-            .str.lower()
-            ==
-            name.strip()
+        clean_name = (
+            name
+            .replace("_s", "'s")
             .replace("_", " ")
             .replace("'", "")
+            .strip()
             .lower()
+        )
+
+        data = bird_data[
+            bird_data["clean_name"] == clean_name
         ]
 
         if data.empty:
+
             return jsonify({
                 "error": "Bird not found"
             })
 
-        return jsonify(data.iloc[0].to_dict())
+        bird_info = data.iloc[0].to_dict()
+
+        # REMOVE NaN VALUES
+        for key, value in bird_info.items():
+
+            if pd.isna(value):
+
+                bird_info[key] = ""
+
+            elif isinstance(
+                value,
+                (np.integer, np.floating)
+            ):
+
+                bird_info[key] = value.item()
+
+        return jsonify(bird_info)
 
     except Exception as e:
+
         return jsonify({
             "error": str(e)
         })
@@ -229,5 +285,5 @@ def bird_info():
 # RUN APP
 # ==========================================
 if __name__ == "__main__":
-    app.run(debug=True)
 
+    app.run(debug=True)
