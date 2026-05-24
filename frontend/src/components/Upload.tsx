@@ -357,6 +357,22 @@ export default function Upload() {
 
                   )}
 
+                  {result.info?.special_feature && (
+
+  <div className="mt-4 rounded-2xl bg-blue-50 border border-blue-200 p-4">
+
+    <h3 className="font-bold text-blue-700">
+      ⭐ Special Feature
+    </h3>
+
+    <p className="mt-1 text-sm text-blue-600">
+      {result.info.special_feature}
+    </p>
+
+  </div>
+
+)}
+
                   {/* BUTTON */}
                   <button
                     onClick={() => setShowInfo(!showInfo)}
