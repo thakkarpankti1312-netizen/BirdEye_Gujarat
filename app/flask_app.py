@@ -116,13 +116,13 @@ def predict():
         # ==================================
         # GET IMAGE
         # ==================================
-        file = request.files.get("image")
+        file = request.files.get("file")
 
         if file is None:
 
             return jsonify({
                 "error": "No image uploaded"
-            })
+            }), 400
 
         # ==================================
         # PROCESS IMAGE

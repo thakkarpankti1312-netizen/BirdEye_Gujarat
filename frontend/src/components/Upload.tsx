@@ -43,31 +43,38 @@ export default function Upload() {
 
       const data = await predictBird(file);
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 2500)
-      );
-
       console.log("FINAL DATA:", data);
+
+      // BACKEND ERROR
+      if (data.error) {
+
+        throw new Error(data.error);
+
+      }
 
       setResult({
         prediction: data.prediction || "Unknown Bird",
         confidence: data.confidence || 0,
-        info: data.info,
+        info: data.info || {},
       });
 
-      setLoading(false);
+    } catch (error: any) {
 
-    } catch (error) {
+      console.error("UPLOAD ERROR:", error);
 
-      console.error(error);
-
-      setLoading(false);
+      alert(
+        error?.message || "Prediction Failed"
+      );
 
       setResult({
         prediction: "Prediction Failed",
         confidence: 0,
         info: {},
       });
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -142,7 +149,7 @@ export default function Upload() {
         </div>
 
         {/* MAIN GRID */}
-        <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="mt-14 flex flex-col gap-10">
 
           {/* UPLOAD BOX */}
           <motion.div
@@ -237,7 +244,7 @@ export default function Upload() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="rounded-[32px] overflow-hidden border border-white/30 bg-white/70 backdrop-blur-xl shadow-2xl"
+                className="rounded-[32px] overflow-hidden border border-white/30 bg-white/70 backdrop-blur-xl shadow-2xl w-full"
               >
 
                 {/* TOP */}
@@ -246,7 +253,7 @@ export default function Upload() {
                   <img
                     src={preview!}
                     alt="bird"
-                    className="h-[320px] w-full object-cover"
+                    className="h-[380px] lg:h-[420px] w-full object-cover"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -364,8 +371,14 @@ export default function Upload() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5"
-                      >
+                        className="
+                        mt-8
+                        flex
+                        flex-wrap
+                        gap-5
+                        justify-start
+                        items-stretch
+                        " >
 
                         {Object.entries(result.info).map(([key, value]) => (
 
@@ -373,8 +386,25 @@ export default function Upload() {
                             key={key}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="group rounded-3xl border border-green-100 bg-gradient-to-br from-white to-green-50 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300"
-                          >
+                            className="
+                            group
+                            min-w-[260px]
+                            max-w-[320px]
+                            flex-1
+                            rounded-3xl
+                            border
+                          border-green-100
+                            bg-gradient-to-br
+                          from-white
+                          to-green-50
+                            p-5
+                            shadow-sm
+                            hover:shadow-xl
+                            hover:-translate-y-1
+                            transition
+                            duration-300
+                            "
+                            >
 
                             <div className="text-[11px] tracking-[3px] font-bold uppercase text-green-600">
 

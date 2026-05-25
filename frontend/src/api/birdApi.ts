@@ -2,7 +2,7 @@ export const predictBird = async (file: File) => {
 
   const formData = new FormData();
 
-  formData.append("image", file);
+  formData.append("file", file);
 
   // ONLY ONE API CALL
   const response = await fetch(
